@@ -15,6 +15,34 @@ function getBaseUrl() {
   return process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || ""
 }
 
+// Short-lived token minted from the BetterAuth session by /api/token.
+// Cached in memory so each dashboard request does not hit the token route.
+let cachedToken: string | null = null
+let cachedTokenExpiresAt = 0
+
+export function clearApiToken() {
+  cachedToken = null
+  cachedTokenExpiresAt = 0
+}
+
+async function getApiToken(): Promise<string | null> {
+  if (cachedToken && Date.now() < cachedTokenExpiresAt) return cachedToken
+  try {
+    const res = await fetch("/api/token", {
+      credentials: "same-origin",
+      cache: "no-store",
+    })
+    if (!res.ok) return null
+    const body = await res.json()
+    if (typeof body?.token !== "string" || !body.token) return null
+    cachedToken = body.token
+    cachedTokenExpiresAt = Date.now() + Math.max(1, Number(body.expiresIn) || 300) * 1000 - 30_000
+    return cachedToken
+  } catch {
+    return null
+  }
+}
+
 export async function apiFetch<T = unknown>(
   path: string,
   options: ApiOptions = {}
@@ -27,15 +55,22 @@ export async function apiFetch<T = unknown>(
     finalHeaders.set("Content-Type", "application/json")
   }
 
-  // JWT/token attachment is expected to be handled by the auth/session layer.
-  // When a token is available in storage/cookies, callers may pass it via headers;
-  // this wrapper centralizes base URL, JSON parsing, and error handling.
-  void auth
+  if (auth && !finalHeaders.has("Authorization")) {
+    const token = await getApiToken()
+    if (token) finalHeaders.set("Authorization", `Bearer ${token}`)
+  }
+
+  // The Express API authenticates via the Bearer token, not cookies, and its
+  // CORS policy does not allow credentials. Keep cookies for same-origin calls.
+  const isCrossOrigin =
+    typeof window !== "undefined" &&
+    /^https?:\/\//i.test(url) &&
+    new URL(url).origin !== window.location.origin
 
   const res = await fetch(url, {
     ...rest,
     headers: finalHeaders,
-    credentials: "include",
+    credentials: isCrossOrigin ? "omit" : "same-origin",
   })
 
   const contentType = res.headers.get("content-type") || ""
@@ -43,6 +78,7 @@ export async function apiFetch<T = unknown>(
   const data = isJson ? await res.json().catch(() => null) : await res.text().catch(() => null)
 
   if (!res.ok) {
+    if (res.status === 401 && auth) clearApiToken()
     const message =
       (data && typeof data === "object" && "message" in data && typeof (data as any).message === "string"
         ? (data as any).message
