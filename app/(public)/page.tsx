@@ -9,12 +9,16 @@ async function getFeaturedServices(): Promise<Service[]> {
   const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "")
   if (!base) return []
   try {
-    const res = await fetch(`${base}/api/services?approved=true&available=true&limit=6&sort=newest`, {
+    const res = await fetch(`${base}/api/services?limit=6&sort=newest`, {
       cache: "no-store",
     })
     if (!res.ok) return []
-    const data = await res.json()
-    return Array.isArray(data) ? data : data?.services || data?.data || []
+    const body = await res.json()
+    if (Array.isArray(body)) return body
+    if (Array.isArray(body?.data)) return body.data
+    if (Array.isArray(body?.data?.data)) return body.data.data
+    if (Array.isArray(body?.services)) return body.services
+    return []
   } catch {
     return []
   }

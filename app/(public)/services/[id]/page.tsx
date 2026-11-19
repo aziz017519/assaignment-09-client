@@ -10,8 +10,8 @@ async function getService(id: string): Promise<Service | null> {
   try {
     const res = await fetch(`${base}/api/services/${id}`, { cache: "no-store" })
     if (!res.ok) return null
-    const data = await res.json()
-    return data?.service || data?.data || data
+    const body = await res.json()
+    return body?.service || body?.data || body || null
   } catch {
     return null
   }

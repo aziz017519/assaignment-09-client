@@ -14,12 +14,15 @@ async function getServices(params: Record<string, string | string[] | undefined>
   for (const [k, v] of Object.entries(params)) {
     if (typeof v === "string" && v) sp.set(k, v)
   }
-  if (!sp.has("approved")) sp.set("approved", "true")
   try {
     const res = await fetch(`${base}/api/services?${sp.toString()}`, { cache: "no-store" })
     if (!res.ok) return []
-    const data = await res.json()
-    return Array.isArray(data) ? data : data?.services || data?.data || []
+    const body = await res.json()
+    if (Array.isArray(body)) return body
+    if (Array.isArray(body?.data)) return body.data
+    if (Array.isArray(body?.data?.data)) return body.data.data
+    if (Array.isArray(body?.services)) return body.services
+    return []
   } catch {
     return []
   }
