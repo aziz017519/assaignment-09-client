@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Search, Wrench, ClipboardList, BadgeDollarSign, CheckCircle2, Shield, Clock, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ServiceCard } from "@/components/services/service-card"
@@ -51,13 +52,19 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="relative mx-auto aspect-[4/3] w-full max-w-xl overflow-hidden rounded-2xl border bg-card shadow-sm">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-accent/20" />
-            <div className="relative flex h-full flex-col items-center justify-center gap-4 p-8 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow">
-                <Wrench className="h-8 w-8" />
-              </div>
-              <p className="text-lg font-semibold">Expert technicians for every fix</p>
-              <p className="max-w-sm text-sm text-muted-foreground">AC, fridge, washing machine, TV, mobile, laptop and more—book the right help fast.</p>
+            <Image
+              src="/images/hero-technicians.jpg"
+              alt="FixMate technicians repairing a home appliance during an on-site service visit"
+              fill
+              priority
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+            />
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent p-5 pt-16 sm:p-6 sm:pt-20">
+              <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                <Wrench className="h-3.5 w-3.5" />
+                Verified technicians
+              </span>
             </div>
           </div>
         </div>

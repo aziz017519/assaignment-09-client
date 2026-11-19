@@ -20,7 +20,13 @@ async function getService(id: string): Promise<Service | null> {
 export default async function ServiceDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const service = await getService(id)
-  if (!service || service.approvalStatus !== "approved" || service.available === false) {
+  if (!service || service.approvalStatus !== "approved") {
+    notFound()
+  }
+  if ("available" in service && service.available === false) {
+    notFound()
+  }
+  if ("isAvailable" in service && (service as any).isAvailable === false) {
     notFound()
   }
 
