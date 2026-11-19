@@ -4,7 +4,7 @@ import { mongodbAdapter } from "@better-auth/mongo-adapter"
 
 // const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/database"
 const client = new MongoClient(process.env.BETTER_AUTH_DB_URI as string )
-const db = client.db("fixmatedb")
+const db = client.db("fixmate")
 
 export const auth = betterAuth({
   appName: "FixMate",
