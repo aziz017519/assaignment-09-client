@@ -1,22 +1,182 @@
-import { Calendar, CheckCircle2, Clock } from "lucide-react"
+"use client"
+
+import { useCallback, useEffect, useState } from "react"
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts"
+import { Calendar, CheckCircle2, Clock, RefreshCw } from "lucide-react"
 import { StatsCard } from "@/components/shared/stats-card"
+import { EmptyState } from "@/components/shared/empty-state"
+import { Button } from "@/components/ui/button"
+import { api } from "@/lib/api"
+
+type ActivityPoint = {
+  label: string
+  count: number
+}
+
+type BookingStats = {
+  totalRequests: number
+  activeJobs: number
+  completedJobs: number
+  activity: ActivityPoint[]
+}
+
+const EMPTY_STATS: BookingStats = {
+  totalRequests: 0,
+  activeJobs: 0,
+  completedJobs: 0,
+  activity: [],
+}
 
 export default function CustomerOverviewPage() {
+  const [stats, setStats] = useState<BookingStats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
+
+  const loadStats = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      // Express sendSuccess() wraps the payload in { success: true, data: ... }.
+      const body = await api.get<unknown>("/api/bookings/stats")
+      const raw =
+        body && typeof body === "object" && "data" in body
+          ? (body as { data: unknown }).data
+          : body
+      const data = (raw ?? {}) as Partial<BookingStats>
+      setStats({
+        totalRequests: Number(data.totalRequests) || 0,
+        activeJobs: Number(data.activeJobs) || 0,
+        completedJobs: Number(data.completedJobs) || 0,
+        activity: Array.isArray(data.activity) ? data.activity : [],
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not load your booking stats.")
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadStats()
+  }, [loadStats, reloadKey])
+
+  const hasActivity =
+    !!stats?.activity.some((point) => Number(point.count) > 0)
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Customer Overview</h1>
-        <p className="text-muted-foreground">Track your repair requests and recent activity.</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Customer Overview</h1>
+          <p className="text-muted-foreground">Track your repair requests and recent activity.</p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setReloadKey((key) => key + 1)}
+          disabled={loading}
+        >
+          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          Refresh
+        </Button>
       </div>
+
+      {error ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <span>{error}</span>
+          <Button variant="outline" size="sm" onClick={() => setReloadKey((key) => key + 1)}>
+            Try again
+          </Button>
+        </div>
+      ) : null}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <StatsCard title="Total Requests" value="—" icon={Calendar} />
-        <StatsCard title="Active Jobs" value="—" icon={Clock} />
-        <StatsCard title="Completed Jobs" value="—" icon={CheckCircle2} />
+        {loading || !stats ? (
+          <>
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="animate-pulse rounded-xl border bg-card p-5 shadow-sm">
+                <div className="h-4 w-24 rounded bg-muted" />
+                <div className="mt-3 h-8 w-16 rounded bg-muted" />
+              </div>
+            ))}
+          </>
+        ) : (
+          <>
+            <StatsCard title="Total Requests" value={stats.totalRequests} icon={Calendar} />
+            <StatsCard title="Active Jobs" value={stats.activeJobs} icon={Clock} />
+            <StatsCard title="Completed Jobs" value={stats.completedJobs} icon={CheckCircle2} />
+          </>
+        )}
       </div>
-      <div className="rounded-xl border bg-card p-6">
-        <h2 className="font-semibold">Activity Chart</h2>
-        <p className="mt-2 text-sm text-muted-foreground">Connect to the bookings API to visualize request activity over time (e.g. with Recharts).</p>
-        <div className="mt-4 flex h-48 items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">Chart placeholder</div>
+
+      <div className="rounded-xl border bg-card p-6 shadow-sm">
+        <div className="mb-4 flex items-baseline justify-between gap-4">
+          <div>
+            <h2 className="font-semibold">Activity Chart</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Repair requests created over the last 7 days.</p>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="h-64 animate-pulse rounded-lg bg-muted/60" />
+        ) : !hasActivity ? (
+          <EmptyState
+            title="No activity yet"
+            description="Your repair requests will appear here once you send a request."
+            className="min-h-64"
+          />
+        ) : (
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={stats?.activity ?? []}
+                margin={{ top: 8, right: 8, left: -20, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                <XAxis
+                  dataKey="label"
+                  tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+                  tickLine={false}
+                  axisLine={{ stroke: "var(--border)" }}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip
+                  cursor={{ fill: "var(--primary)", fillOpacity: 0.08 }}
+                  contentStyle={{
+                    background: "var(--card)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 12,
+                    color: "var(--card-foreground)",
+                    fontSize: 12,
+                  }}
+                  labelStyle={{ color: "var(--muted-foreground)" }}
+                  formatter={(value) => [Number(value), "Requests"]}
+                />
+                <Bar
+                  dataKey="count"
+                  name="Requests"
+                  fill="var(--chart-1)"
+                  radius={[6, 6, 0, 0]}
+                  maxBarSize={48}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </div>
     </div>
   )
