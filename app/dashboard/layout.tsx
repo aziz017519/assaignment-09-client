@@ -10,7 +10,7 @@ export default async function DashboardLayout({
   let role: "customer" | "technician" | "admin" = "customer"
   try {
     const session = await auth.api.getSession({ headers: await headers() })
-    const r = (session?.user as any)?.role
+    const r = (session?.user as { role?: string | null } | null)?.role
     if (r === "admin" || r === "technician" || r === "customer") role = r
   } catch {
     // middleware handles redirects; keep safe fallback

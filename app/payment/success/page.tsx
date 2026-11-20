@@ -2,15 +2,21 @@ import { Suspense } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
+type Verification = {
+  amount?: number | string
+  transactionId?: string
+  paymentIntentId?: string
+}
+
 async function SuccessContent({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams
   const sessionId = typeof params.session_id === "string" ? params.session_id : null
   const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "")
-  let verification: any = null
+  let verification: Verification | null = null
   if (sessionId && base) {
     try {
       const res = await fetch(`${base}/api/payments/verify?session_id=${encodeURIComponent(sessionId)}`, { cache: "no-store" })
-      if (res.ok) verification = await res.json()
+      if (res.ok) verification = (await res.json()) as Verification
     } catch {
       // handle gracefully
     }

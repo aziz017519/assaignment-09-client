@@ -63,7 +63,14 @@ export default function CustomerOverviewPage() {
   }, [])
 
   useEffect(() => {
-    void loadStats()
+    let active = true
+    // Defer state updates out of the effect body to avoid cascading renders.
+    void Promise.resolve().then(() => {
+      if (active) void loadStats()
+    })
+    return () => {
+      active = false
+    }
   }, [loadStats, reloadKey])
 
   const retry = useCallback(() => {

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { signInSchema, type SignInValues } from "@/lib/validators"
 import { authClient } from "@/lib/auth-client"
 import { dashboardPathForRole } from "@/lib/constants"
+import type { Role } from "@/types"
 
 function SignInForm() {
   const router = useRouter()
@@ -31,12 +32,12 @@ function SignInForm() {
       })
       if (res.error) throw new Error(res.error.message || "Sign in failed")
       toast.success("Signed in successfully")
-      const role = (res.data?.user as any)?.role || "customer"
+      const role = (res.data?.user as { role?: Role } | null)?.role || "customer"
       const target = redirect && redirect.startsWith("/") ? redirect : dashboardPathForRole(role)
       router.push(target)
       router.refresh()
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to sign in")
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to sign in")
     } finally {
       setLoading(false)
     }

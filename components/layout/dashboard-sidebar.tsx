@@ -11,14 +11,16 @@ import {
   ListChecks,
   Users,
   BadgeCheck,
+  Crown,
   ReceiptText,
   UserCircle,
   X,
+  type LucideIcon,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Logo } from "@/components/layout/logo"
 
-const menus: Record<string, { href: string; label: string; icon: any }[]> = {
+const menus: Record<string, { href: string; label: string; icon: LucideIcon }[]> = {
   customer: [
     { href: "/dashboard/customer", label: "Overview", icon: LayoutDashboard },
     { href: "/dashboard/customer/bookings", label: "My Bookings", icon: Calendar },
@@ -30,6 +32,8 @@ const menus: Record<string, { href: string; label: string; icon: any }[]> = {
     { href: "/dashboard/technician/add-service", label: "Add Service", icon: PlusCircle },
     { href: "/dashboard/technician/my-services", label: "My Services", icon: Wrench },
     { href: "/dashboard/technician/requests", label: "Requests", icon: ListChecks },
+    { href: "/dashboard/technician/payments", label: "Payments", icon: CreditCard },
+    { href: "/dashboard/technician/subscription", label: "Subscription", icon: Crown },
     { href: "/dashboard/profile", label: "Profile", icon: UserCircle },
   ],
   admin: [

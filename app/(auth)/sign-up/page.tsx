@@ -3,13 +3,14 @@
 import { Suspense, useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { signUpSchema, type SignUpValues } from "@/lib/validators"
 import { authClient } from "@/lib/auth-client"
 import { dashboardPathForRole } from "@/lib/constants"
+import type { Role } from "@/types"
 
 function SignUpForm() {
   const router = useRouter()
@@ -19,14 +20,14 @@ function SignUpForm() {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     setValue,
     formState: { errors },
   } = useForm<SignUpValues>({
     resolver: zodResolver(signUpSchema),
     defaultValues: { role: "customer" },
   })
-  const role = watch("role")
+  const role = useWatch({ control, name: "role" })
 
   async function onSubmit(values: SignUpValues) {
     setLoading(true)
@@ -40,12 +41,12 @@ function SignUpForm() {
       })
       if (res.error) throw new Error(res.error.message || "Sign up failed")
       toast.success("Account created successfully")
-      const userRole = (res.data?.user as any)?.role || values.role || "customer"
+      const userRole = (res.data?.user as { role?: Role } | null)?.role || values.role || "customer"
       const target = redirect && redirect.startsWith("/") ? redirect : dashboardPathForRole(userRole)
       router.push(target)
       router.refresh()
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to create account")
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to create account")
     } finally {
       setLoading(false)
     }

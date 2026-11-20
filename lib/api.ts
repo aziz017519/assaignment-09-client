@@ -3,11 +3,13 @@ type ApiOptions = RequestInit & { auth?: boolean; _retried?: boolean }
 export class ApiError extends Error {
   status: number
   data: unknown
-  constructor(message: string, status: number, data: unknown) {
+  code?: string
+  constructor(message: string, status: number, data: unknown, code?: string) {
     super(message)
     this.name = "ApiError"
     this.status = status
     this.data = data
+    this.code = code
   }
 }
 
@@ -95,16 +97,23 @@ export async function apiFetch<T = unknown>(
         window.dispatchEvent(new CustomEvent("api:unauthorized"))
       }
     }
+    const payload = data && typeof data === "object" ? (data as Record<string, unknown>) : null
+    const serverMessage =
+      typeof payload?.message === "string"
+        ? payload.message
+        : typeof payload?.error === "string"
+          ? payload.error
+          : null
+    const serverCode = typeof payload?.code === "string" ? payload.code : undefined
     const message =
-      (data && typeof data === "object" && "message" in data && typeof (data as any).message === "string"
-        ? (data as any).message
-        : null) ||
+      serverMessage ||
+      (typeof data === "string" && data.trim() ? data.trim() : null) ||
       (res.status === 401
         ? "Authentication required. Please sign in again."
         : res.status === 403
           ? "You do not have permission to perform this action."
           : "Request failed")
-    throw new ApiError(message, res.status, data)
+    throw new ApiError(message, res.status, data, serverCode)
   }
 
   return data as T

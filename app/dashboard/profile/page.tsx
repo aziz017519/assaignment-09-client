@@ -9,10 +9,11 @@ import { profileSchema, type ProfileValues } from "@/lib/validators"
 import { uploadImageToImgbb } from "@/lib/imgbb"
 import { api } from "@/lib/api"
 import { authClient } from "@/lib/auth-client"
+import type { User } from "@/types"
 
 export default function ProfilePage() {
   const { data: session, isPending } = authClient.useSession()
-  const user = session?.user as any
+  const user = session?.user as Partial<User> | null | undefined
   const [saving, setSaving] = useState(false)
   const [photo, setPhoto] = useState<File | null>(null)
   const { register, handleSubmit, formState: { errors } } = useForm<ProfileValues>({
@@ -33,8 +34,8 @@ export default function ProfilePage() {
       await api.patch("/api/users/profile", { ...values, ...(imageUrl ? { image: imageUrl } : {}) })
       await authClient.getSession()
       toast.success("Profile updated successfully")
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to update profile")
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to update profile")
     } finally {
       setSaving(false)
     }

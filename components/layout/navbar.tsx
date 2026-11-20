@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { dashboardPathForRole } from "@/lib/constants"
 import { authClient } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
+import type { User } from "@/types"
 
 const links = [
   { href: "/", label: "Home" },
@@ -23,7 +24,7 @@ export function Navbar() {
   const { data: session, isPending } = authClient.useSession()
   const [open, setOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  const user = session?.user as any
+  const user = session?.user as Partial<User> | null | undefined
 
   async function handleSignOut() {
     try {

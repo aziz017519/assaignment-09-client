@@ -5,6 +5,6 @@ import { dashboardPathForRole } from "@/lib/constants"
 
 export default async function DashboardIndexPage() {
   const session = await auth.api.getSession({ headers: await headers() })
-  const role = (session?.user as any)?.role || "customer"
+  const role = (session?.user as { role?: string | null } | null)?.role || "customer"
   redirect(dashboardPathForRole(role))
 }
