@@ -1,4 +1,4 @@
-type ApiOptions = RequestInit & { auth?: boolean }
+type ApiOptions = RequestInit & { auth?: boolean; _retried?: boolean }
 
 export class ApiError extends Error {
   status: number
@@ -25,8 +25,8 @@ export function clearApiToken() {
   cachedTokenExpiresAt = 0
 }
 
-async function getApiToken(): Promise<string | null> {
-  if (cachedToken && Date.now() < cachedTokenExpiresAt) return cachedToken
+async function getApiToken(force = false): Promise<string | null> {
+  if (!force && cachedToken && Date.now() < cachedTokenExpiresAt) return cachedToken
   try {
     const res = await fetch("/api/token", {
       credentials: "same-origin",
@@ -47,7 +47,7 @@ export async function apiFetch<T = unknown>(
   path: string,
   options: ApiOptions = {}
 ): Promise<T> {
-  const { auth = true, headers, ...rest } = options
+  const { auth = true, headers, _retried = false, ...rest } = options
   const url = path.startsWith("http") ? path : `${getBaseUrl()}${path.startsWith("/") ? path : `/${path}`}`
 
   const finalHeaders = new Headers(headers)
@@ -55,9 +55,10 @@ export async function apiFetch<T = unknown>(
     finalHeaders.set("Content-Type", "application/json")
   }
 
+  let tokenUsed: string | null = null
   if (auth && !finalHeaders.has("Authorization")) {
-    const token = await getApiToken()
-    if (token) finalHeaders.set("Authorization", `Bearer ${token}`)
+    tokenUsed = await getApiToken()
+    if (tokenUsed) finalHeaders.set("Authorization", `Bearer ${tokenUsed}`)
   }
 
   // The Express API authenticates via the Bearer token, not cookies, and its
@@ -78,7 +79,22 @@ export async function apiFetch<T = unknown>(
   const data = isJson ? await res.json().catch(() => null) : await res.text().catch(() => null)
 
   if (!res.ok) {
-    if (res.status === 401 && auth) clearApiToken()
+    if (res.status === 401 && auth) {
+      clearApiToken()
+      // A cached token may have expired between requests. Mint a fresh one and
+      // retry exactly once before treating the session as invalid.
+      if (!_retried) {
+        const fresh = await getApiToken(true)
+        if (fresh && fresh !== tokenUsed) {
+          const retryHeaders = new Headers(finalHeaders)
+          retryHeaders.set("Authorization", `Bearer ${fresh}`)
+          return apiFetch<T>(path, { ...options, headers: retryHeaders, _retried: true })
+        }
+      }
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("api:unauthorized"))
+      }
+    }
     const message =
       (data && typeof data === "object" && "message" in data && typeof (data as any).message === "string"
         ? (data as any).message

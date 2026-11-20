@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
+import Link from "next/link"
 import {
   Bar,
   BarChart,
@@ -14,7 +15,7 @@ import { Calendar, CheckCircle2, Clock, RefreshCw } from "lucide-react"
 import { StatsCard } from "@/components/shared/stats-card"
 import { EmptyState } from "@/components/shared/empty-state"
 import { Button } from "@/components/ui/button"
-import { api } from "@/lib/api"
+import { ApiError, api, clearApiToken } from "@/lib/api"
 
 type ActivityPoint = {
   label: string
@@ -28,22 +29,17 @@ type BookingStats = {
   activity: ActivityPoint[]
 }
 
-const EMPTY_STATS: BookingStats = {
-  totalRequests: 0,
-  activeJobs: 0,
-  completedJobs: 0,
-  activity: [],
-}
-
 export default function CustomerOverviewPage() {
   const [stats, setStats] = useState<BookingStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [errorStatus, setErrorStatus] = useState<number | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
 
   const loadStats = useCallback(async () => {
     setLoading(true)
     setError(null)
+    setErrorStatus(null)
     try {
       // Express sendSuccess() wraps the payload in { success: true, data: ... }.
       const body = await api.get<unknown>("/api/bookings/stats")
@@ -60,6 +56,7 @@ export default function CustomerOverviewPage() {
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not load your booking stats.")
+      setErrorStatus(err instanceof ApiError ? err.status : null)
     } finally {
       setLoading(false)
     }
@@ -68,6 +65,11 @@ export default function CustomerOverviewPage() {
   useEffect(() => {
     void loadStats()
   }, [loadStats, reloadKey])
+
+  const retry = useCallback(() => {
+    clearApiToken()
+    setReloadKey((key) => key + 1)
+  }, [])
 
   const hasActivity =
     !!stats?.activity.some((point) => Number(point.count) > 0)
@@ -82,7 +84,7 @@ export default function CustomerOverviewPage() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setReloadKey((key) => key + 1)}
+          onClick={retry}
           disabled={loading}
         >
           <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
@@ -93,14 +95,21 @@ export default function CustomerOverviewPage() {
       {error ? (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           <span>{error}</span>
-          <Button variant="outline" size="sm" onClick={() => setReloadKey((key) => key + 1)}>
-            Try again
-          </Button>
+          <div className="flex gap-2">
+            {errorStatus === 401 || errorStatus === 403 ? (
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/sign-in?redirect=%2Fdashboard%2Fcustomer">Sign in</Link>
+              </Button>
+            ) : null}
+            <Button variant="outline" size="sm" onClick={retry}>
+              Try again
+            </Button>
+          </div>
         </div>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {loading || !stats ? (
+        {loading ? (
           <>
             {[0, 1, 2].map((i) => (
               <div key={i} className="animate-pulse rounded-xl border bg-card p-5 shadow-sm">
@@ -111,9 +120,9 @@ export default function CustomerOverviewPage() {
           </>
         ) : (
           <>
-            <StatsCard title="Total Requests" value={stats.totalRequests} icon={Calendar} />
-            <StatsCard title="Active Jobs" value={stats.activeJobs} icon={Clock} />
-            <StatsCard title="Completed Jobs" value={stats.completedJobs} icon={CheckCircle2} />
+            <StatsCard title="Total Requests" value={stats?.totalRequests ?? 0} icon={Calendar} />
+            <StatsCard title="Active Jobs" value={stats?.activeJobs ?? 0} icon={Clock} />
+            <StatsCard title="Completed Jobs" value={stats?.completedJobs ?? 0} icon={CheckCircle2} />
           </>
         )}
       </div>
@@ -128,6 +137,10 @@ export default function CustomerOverviewPage() {
 
         {loading ? (
           <div className="h-64 animate-pulse rounded-lg bg-muted/60" />
+        ) : error && !stats ? (
+          <div className="flex h-64 items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">
+            Activity unavailable. Use “Try again” to reload.
+          </div>
         ) : !hasActivity ? (
           <EmptyState
             title="No activity yet"

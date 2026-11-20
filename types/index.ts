@@ -32,13 +32,20 @@ export interface Service {
   title: string
   description: string
   category: string
-  price: number
+  // Express API returns `basePrice`; older shapes may use `price`.
+  basePrice?: number | string | null
+  price?: number | string | null
+  startingPrice?: number | string | null
+  minPrice?: number | string | null
+  pricing?: { amount?: number | string | null }
   duration?: string
   serviceMode: ServiceMode | string
   area?: string
   image: string
   available?: boolean
   approvalStatus: ApprovalStatus
+  technicianName?: string
+  provider?: { name?: string }
   technician?: {
     _id?: string
     name: string
