@@ -74,6 +74,9 @@ export async function apiFetch<T = unknown>(
     ...rest,
     headers: finalHeaders,
     credentials: isCrossOrigin ? "omit" : "same-origin",
+    // Payment/plan state changes in the background via webhooks. Cached GETs
+    // could otherwise keep a stale "pending" or "free" response on screen.
+    cache: "no-store",
   })
 
   const contentType = res.headers.get("content-type") || ""

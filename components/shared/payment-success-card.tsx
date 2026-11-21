@@ -401,7 +401,7 @@ export function PaymentSuccessCard({
                 label="Next renewal date"
                 value={formatDateOnly(result.subscription.renewalDate)}
               />
-              <DetailRow label="Status">
+              <DetailRow label="Plan status">
                 <VerifiedProBadge />
               </DetailRow>
             </>
