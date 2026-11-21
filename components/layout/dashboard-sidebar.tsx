@@ -25,7 +25,7 @@ const menus: Record<string, { href: string; label: string; icon: LucideIcon }[]>
     { href: "/dashboard/customer", label: "Overview", icon: LayoutDashboard },
     { href: "/dashboard/customer/bookings", label: "My Bookings", icon: Calendar },
     { href: "/dashboard/customer/payments", label: "Payments", icon: CreditCard },
-    { href: "/dashboard/profile", label: "Profile", icon: UserCircle },
+    { href: "/dashboard/customer/profile", label: "Profile", icon: UserCircle },
   ],
   technician: [
     { href: "/dashboard/technician", label: "Overview", icon: LayoutDashboard },
@@ -34,7 +34,7 @@ const menus: Record<string, { href: string; label: string; icon: LucideIcon }[]>
     { href: "/dashboard/technician/requests", label: "Requests", icon: ListChecks },
     { href: "/dashboard/technician/payments", label: "Payments", icon: CreditCard },
     { href: "/dashboard/technician/subscription", label: "Subscription", icon: Crown },
-    { href: "/dashboard/profile", label: "Profile", icon: UserCircle },
+    { href: "/dashboard/technician/profile", label: "Profile", icon: UserCircle },
   ],
   admin: [
     { href: "/dashboard/admin", label: "Overview", icon: LayoutDashboard },
@@ -42,7 +42,7 @@ const menus: Record<string, { href: string; label: string; icon: LucideIcon }[]>
     { href: "/dashboard/admin/services", label: "Services", icon: BadgeCheck },
     { href: "/dashboard/admin/bookings", label: "Bookings", icon: Calendar },
     { href: "/dashboard/admin/transactions", label: "Transactions", icon: ReceiptText },
-    { href: "/dashboard/profile", label: "Profile", icon: UserCircle },
+    { href: "/dashboard/admin/profile", label: "Profile", icon: UserCircle },
   ],
 }
 

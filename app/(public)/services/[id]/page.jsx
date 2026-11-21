@@ -9,9 +9,10 @@ import {
   getTechnician,
 } from "@/lib/service-display"
 import { RequestRepairForm } from "@/components/services/request-repair-form"
+import { getApiBaseUrl } from "@/lib/api"
 
 async function getService(id) {
-  const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "")
+  const base = getApiBaseUrl()
   if (!base) return null
   try {
     const res = await fetch(`${base}/api/services/${id}`, { cache: "no-store" })

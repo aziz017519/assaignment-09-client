@@ -13,8 +13,12 @@ export class ApiError extends Error {
   }
 }
 
-function getBaseUrl() {
-  return process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || ""
+// Normalize the configured backend origin so callers can always pass paths
+// beginning with "/api" without duplicating or dropping that segment.
+export function getApiBaseUrl() {
+  const configured = process.env.NEXT_PUBLIC_API_URL?.trim()
+  if (!configured) return ""
+  return configured.replace(/\/+$/, "").replace(/\/api$/, "")
 }
 
 // Short-lived token minted from the BetterAuth session by /api/token.
@@ -50,7 +54,9 @@ export async function apiFetch<T = unknown>(
   options: ApiOptions = {}
 ): Promise<T> {
   const { auth = true, headers, _retried = false, ...rest } = options
-  const url = path.startsWith("http") ? path : `${getBaseUrl()}${path.startsWith("/") ? path : `/${path}`}`
+  const url = path.startsWith("http")
+    ? path
+    : `${getApiBaseUrl()}${path.startsWith("/") ? path : `/${path}`}`
 
   const finalHeaders = new Headers(headers)
   if (!finalHeaders.has("Content-Type") && !(rest.body instanceof FormData)) {

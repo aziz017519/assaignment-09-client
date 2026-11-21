@@ -21,6 +21,7 @@ export function ApiUnauthorizedHandler() {
       } finally {
         router.push(`/sign-in?redirect=${encodeURIComponent(pathname || "/dashboard")}`)
         router.refresh()
+        handling = false
       }
     }
     const onForbidden = () => {

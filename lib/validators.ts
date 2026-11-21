@@ -39,11 +39,41 @@ export const repairRequestSchema = z.object({
     .min(20, "Problem description must be at least 20 characters"),
 })
 
+const bangladeshPhonePattern = /^(?:\+8801\d{9}|01\d{9})$/
+
+export function normalizePhoneNumber(value: string) {
+  return value.replace(/[\s-]/g, "")
+}
+
+function isHttpUrl(value: string) {
+  try {
+    const url = new URL(value)
+    return url.protocol === "http:" || url.protocol === "https:"
+  } catch {
+    return false
+  }
+}
+
 export const profileSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  phone: z.string().optional().or(z.literal("")),
-  area: z.string().optional().or(z.literal("")),
-  bio: z.string().optional().or(z.literal("")),
+  name: z
+    .string()
+    .trim()
+    .min(2, "Name must be at least 2 characters")
+    .max(80, "Name must be 80 characters or less"),
+  phone: z
+    .string()
+    .trim()
+    .min(1, "Phone is required")
+    .refine(
+      (value) => bangladeshPhonePattern.test(value.replace(/[\s-]/g, "")),
+      "Enter a valid Bangladeshi phone number (+8801XXXXXXXXX or 01XXXXXXXXX)"
+    ),
+  address: z.string().trim().max(300, "Address must be 300 characters or less"),
+  avatar: z
+    .string()
+    .trim()
+    .max(1000, "Avatar URL is too long")
+    .refine((value) => value === "" || isHttpUrl(value), "Enter a valid avatar URL"),
 })
 
 export const serviceSchema = z.object({

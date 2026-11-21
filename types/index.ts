@@ -21,8 +21,11 @@ export interface User {
   name: string
   email: string
   image?: string | null
+  /** API alias for image, used by the shared profile form. */
+  avatar?: string | null
   role: Role
   phone?: string | null
+  address?: string | null
   area?: string | null
   bio?: string | null
   // Technician-only subscription fields; customers and admins ignore them.

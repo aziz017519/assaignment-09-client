@@ -36,6 +36,11 @@ export const auth = betterAuth({
         required: false,
         input: true,
       },
+      address: {
+        type: "string",
+        required: false,
+        input: true,
+      },
     },
   },
   database: mongodbAdapter(db, {

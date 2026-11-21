@@ -3,12 +3,13 @@ import { Suspense } from "react"
 import { ServiceCard } from "@/components/services/service-card"
 import { EmptyState } from "@/components/shared/empty-state"
 import { CATEGORIES, SERVICE_MODES } from "@/lib/constants"
+import { getApiBaseUrl } from "@/lib/api"
 import type { Service } from "@/types"
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
 
 async function getServices(params: Record<string, string | string[] | undefined>): Promise<Service[]> {
-  const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "")
+  const base = getApiBaseUrl()
   if (!base) return []
   const sp = new URLSearchParams()
   for (const [k, v] of Object.entries(params)) {
@@ -70,7 +71,7 @@ async function ServicesContent({ searchParams }: { searchParams: SearchParams })
       </form>
 
       {services.length > 0 ? (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {services.map((service) => (
             <ServiceCard key={service._id || service.id} service={service} />
           ))}

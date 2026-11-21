@@ -61,7 +61,8 @@ export async function middleware(request: NextRequest) {
       if (pathname.startsWith("/dashboard/subscription") && role !== "technician") {
         return NextResponse.redirect(new URL(dashboardPathForRole(role), request.url))
       }
-      // /dashboard/profile is allowed for any logged-in user
+      // Role-specific profile routes are covered by the checks above; the legacy
+      // /dashboard/profile remains valid for any logged-in user.
     }
 
     if (user && isPayment && user.role !== "customer") {

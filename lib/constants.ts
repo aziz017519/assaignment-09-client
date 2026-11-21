@@ -39,7 +39,10 @@ export const PAYMENT_STATUS_META: Record<
   { label: string; className: string }
 > = {
   unpaid: { label: "Unpaid", className: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300" },
+  pending: { label: "Pending", className: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300" },
   paid: { label: "Paid", className: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" },
+  failed: { label: "Failed", className: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" },
+  refunded: { label: "Refunded", className: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" },
 }
 
 export const APPROVAL_STATUS_META: Record<
@@ -59,5 +62,16 @@ export function dashboardPathForRole(role?: string | null) {
       return "/dashboard/technician"
     default:
       return "/dashboard/customer"
+  }
+}
+
+export function profilePathForRole(role?: string | null) {
+  switch (role) {
+    case "admin":
+      return "/dashboard/admin/profile"
+    case "technician":
+      return "/dashboard/technician/profile"
+    default:
+      return "/dashboard/customer/profile"
   }
 }

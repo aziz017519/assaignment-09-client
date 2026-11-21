@@ -4,10 +4,11 @@ import { Search, Wrench, ClipboardList, BadgeDollarSign, CheckCircle2, Shield, C
 import { Button } from "@/components/ui/button"
 import { ServiceCard } from "@/components/services/service-card"
 import { CATEGORIES } from "@/lib/constants"
+import { getApiBaseUrl } from "@/lib/api"
 import type { Service } from "@/types"
 
 async function getFeaturedServices(): Promise<Service[]> {
-  const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "")
+  const base = getApiBaseUrl()
   if (!base) return []
   try {
     const res = await fetch(`${base}/api/services?limit=6&sort=newest`, {
@@ -81,7 +82,7 @@ export default async function HomePage() {
           </Button>
         </div>
         {featured.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {featured.slice(0, 6).map((service) => (
               <ServiceCard key={service._id || service.id} service={service} />
             ))}

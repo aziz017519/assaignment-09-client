@@ -7,7 +7,7 @@ import { useState } from "react"
 import { toast } from "sonner"
 import { Logo } from "@/components/layout/logo"
 import { Button } from "@/components/ui/button"
-import { dashboardPathForRole } from "@/lib/constants"
+import { dashboardPathForRole, profilePathForRole } from "@/lib/constants"
 import { authClient } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
 import type { User } from "@/types"
@@ -94,7 +94,7 @@ export function Navbar() {
                     Dashboard
                   </Link>
                   <Link
-                    href="/dashboard/profile"
+                    href={profilePathForRole(user.role)}
                     className="block rounded-md px-2 py-2 text-sm hover:bg-muted"
                     onClick={() => setMenuOpen(false)}
                   >
@@ -154,7 +154,7 @@ export function Navbar() {
               {user ? (
                 <div className="space-y-1">
                   <Link href={dashboardPathForRole(user.role)} onClick={() => setOpen(false)} className="block rounded-md px-3 py-2 text-sm hover:bg-muted">Dashboard</Link>
-                  <Link href="/dashboard/profile" onClick={() => setOpen(false)} className="block rounded-md px-3 py-2 text-sm hover:bg-muted">Update Profile</Link>
+                  <Link href={profilePathForRole(user.role)} onClick={() => setOpen(false)} className="block rounded-md px-3 py-2 text-sm hover:bg-muted">Update Profile</Link>
                   <button onClick={handleSignOut} className="block w-full rounded-md px-3 py-2 text-left text-sm text-destructive hover:bg-muted">Sign Out</button>
                 </div>
               ) : (

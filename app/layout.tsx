@@ -4,6 +4,7 @@ import { Toaster } from "sonner"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import { ApiUnauthorizedHandler } from "@/components/auth/api-unauthorized-handler"
 import { cn } from "@/lib/utils"
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
@@ -32,6 +33,7 @@ export default function RootLayout({
     >
       <body>
         <ThemeProvider>
+          <ApiUnauthorizedHandler />
           {children}
           <Toaster richColors position="top-right" />
         </ThemeProvider>
