@@ -9,6 +9,7 @@ import { z } from "zod"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { ApiError, api } from "@/lib/api"
+import { dispatchTechnicianDataChanged } from "@/lib/technician-events"
 import { useSubscription } from "@/hooks/use-subscription"
 
 const serviceSchema = z.object({
@@ -61,6 +62,7 @@ export default function AddServicePage() {
     setSaving(true)
     try {
       await api.post("/api/services", values)
+      dispatchTechnicianDataChanged()
       toast.success("Service submitted for approval")
       router.push("/dashboard/technician/my-services")
     } catch (error) {

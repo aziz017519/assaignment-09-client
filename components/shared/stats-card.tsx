@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import type { LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -6,11 +7,13 @@ export function StatsCard({
   value,
   icon: Icon,
   className,
+  footer,
 }: {
   title: string
   value: string | number
   icon?: LucideIcon
   className?: string
+  footer?: ReactNode
 }) {
   return (
     <div className={cn("rounded-xl border bg-card p-5 shadow-sm", className)}>
@@ -25,6 +28,7 @@ export function StatsCard({
           </div>
         ) : null}
       </div>
+      {footer ? <div className="mt-4">{footer}</div> : null}
     </div>
   )
 }
