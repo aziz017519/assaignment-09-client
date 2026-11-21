@@ -1,5 +1,6 @@
 "use client"
 
+import type { ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -14,6 +15,7 @@ export function ConfirmModal({
   onConfirm,
   onCancel,
   className,
+  children,
 }: {
   open: boolean
   title: string
@@ -25,6 +27,7 @@ export function ConfirmModal({
   onConfirm: () => void
   onCancel: () => void
   className?: string
+  children?: ReactNode
 }) {
   if (!open) return null
   return (
@@ -43,6 +46,7 @@ export function ConfirmModal({
         {description ? (
           <p className="mt-2 text-sm text-muted-foreground">{description}</p>
         ) : null}
+        {children}
         <div className="mt-6 flex justify-end gap-2">
           <Button variant="outline" onClick={onCancel} disabled={loading}>
             {cancelLabel}

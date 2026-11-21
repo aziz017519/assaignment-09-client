@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { authClient } from "@/lib/auth-client"
 
 let handling = false
@@ -22,8 +23,15 @@ export function ApiUnauthorizedHandler() {
         router.refresh()
       }
     }
+    const onForbidden = () => {
+      toast.error("You are not allowed to do this")
+    }
     window.addEventListener("api:unauthorized", onUnauthorized)
-    return () => window.removeEventListener("api:unauthorized", onUnauthorized)
+    window.addEventListener("api:forbidden", onForbidden)
+    return () => {
+      window.removeEventListener("api:unauthorized", onUnauthorized)
+      window.removeEventListener("api:forbidden", onForbidden)
+    }
   }, [router, pathname])
 
   return null

@@ -11,11 +11,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
-import { BadgeCheck, RefreshCw, UserCog, Users } from "lucide-react"
+import { BadgeCheck, CalendarCheck, DollarSign, RefreshCw, UserCog, Users } from "lucide-react"
 import { StatsCard } from "@/components/shared/stats-card"
 import { EmptyState } from "@/components/shared/empty-state"
 import { Button } from "@/components/ui/button"
-import { ApiError, api, clearApiToken } from "@/lib/api"
+import { api, clearApiToken } from "@/lib/api"
 
 type ChartPoint = {
   label: string
@@ -78,14 +78,8 @@ export default function AdminOverviewPage() {
       const body = await api.get<unknown>("/api/admin/stats")
       setStats(parseStats(body))
     } catch (err) {
-      if (err instanceof ApiError && err.status === 403) {
-        setError("You are not allowed to view this page")
-      } else if (err instanceof ApiError && err.status === 401) {
-        // api.ts dispatches api:unauthorized, which signs out and redirects.
-        setError("Your session has expired. Redirecting to sign in…")
-      } else {
-        setError(err instanceof Error ? err.message : "Could not load platform stats.")
-      }
+      // 401 redirect and 403 toast are handled globally by lib/api.ts.
+      setError(err instanceof Error ? err.message : "Could not load platform stats.")
     } finally {
       setLoading(false)
     }
@@ -130,7 +124,7 @@ export default function AdminOverviewPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {loading && !stats ? (
           <>
-            {[0, 1, 2].map((i) => (
+            {[0, 1, 2, 3, 4].map((i) => (
               <div key={i} className="animate-pulse rounded-xl border bg-card p-5 shadow-sm">
                 <div className="h-4 w-24 rounded bg-muted" />
                 <div className="mt-3 h-8 w-16 rounded bg-muted" />
@@ -153,6 +147,16 @@ export default function AdminOverviewPage() {
               title="Pending Services"
               value={stats ? formatNumber(stats.pendingServices) : "N/A"}
               icon={BadgeCheck}
+            />
+            <StatsCard
+              title="Total Bookings"
+              value={stats ? formatNumber(stats.totalBookings) : "N/A"}
+              icon={CalendarCheck}
+            />
+            <StatsCard
+              title="Total Revenue"
+              value={stats ? `$${formatNumber(stats.totalRevenue)}` : "N/A"}
+              icon={DollarSign}
             />
           </>
         )}

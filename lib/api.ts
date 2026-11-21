@@ -99,6 +99,9 @@ export async function apiFetch<T = unknown>(
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("api:unauthorized"))
       }
+    } else if (res.status === 403 && typeof window !== "undefined") {
+      // Central handling for role/permission errors; pages stay status-agnostic.
+      window.dispatchEvent(new CustomEvent("api:forbidden"))
     }
     const payload = data && typeof data === "object" ? (data as Record<string, unknown>) : null
     const serverMessage =
