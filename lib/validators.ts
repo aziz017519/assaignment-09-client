@@ -16,7 +16,7 @@ export const signUpSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email address"),
   password: passwordSchema,
   role: z.enum(["customer", "technician"], {
-    required_error: "Please select a role",
+    error: "Please select a role",
   }),
 })
 
