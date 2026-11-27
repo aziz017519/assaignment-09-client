@@ -20,7 +20,6 @@ export interface TechnicianMonthPoint {
 
 export interface TechnicianStats {
   totalServices: number
-  serviceLimit: number | null
   approvedServices: number
   pendingServices: number
   pendingRequests: number

@@ -7,12 +7,23 @@ function ThemeProvider({
   children,
   ...props
 }: React.ComponentProps<typeof NextThemesProvider>) {
+  // CSS transitions are enabled only after the first paint so the stored
+  // theme can apply synchronously without animating on page load.
+  React.useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      document.documentElement.classList.add("theme-ready")
+    })
+    return () => {
+      window.cancelAnimationFrame(frame)
+      document.documentElement.classList.remove("theme-ready")
+    }
+  }, [])
+
   return (
     <NextThemesProvider
       attribute="class"
       defaultTheme="system"
       enableSystem
-      disableTransitionOnChange
       {...props}
     >
       <ThemeHotkey />

@@ -3,16 +3,13 @@
 import Link from "next/link"
 import { Menu } from "lucide-react"
 import { authClient } from "@/lib/auth-client"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
-import { VerifiedProBadge } from "@/components/shared/verified-pro-badge"
-import { useSubscription } from "@/hooks/use-subscription"
 import type { User } from "@/types"
 
 export function DashboardTopbar({ onMenu }: { onMenu: () => void }) {
   const { data: session } = authClient.useSession()
   const user = session?.user as Partial<User> | null | undefined
-  const { status } = useSubscription()
-  const isProTechnician = user?.role === "technician" && status?.plan === "pro"
   return (
     <header className="flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6">
       <div className="flex items-center gap-2">
@@ -22,6 +19,7 @@ export function DashboardTopbar({ onMenu }: { onMenu: () => void }) {
         <span className="text-sm font-medium text-muted-foreground">Dashboard</span>
       </div>
       <div className="flex items-center gap-3">
+        <ThemeToggle />
         <Button variant="outline" size="sm" asChild>
           <Link href="/">Home</Link>
         </Button>
@@ -35,10 +33,7 @@ export function DashboardTopbar({ onMenu }: { onMenu: () => void }) {
             )}
           </span>
           <div className="hidden text-right sm:block">
-            <p className="flex items-center justify-end gap-2 text-sm font-medium leading-none">
-              {user?.name || "User"}
-              {isProTechnician ? <VerifiedProBadge /> : null}
-            </p>
+            <p className="text-sm font-medium leading-none">{user?.name || "User"}</p>
             <p className="mt-1 text-xs capitalize text-muted-foreground">{user?.role || "customer"}</p>
           </div>
         </div>

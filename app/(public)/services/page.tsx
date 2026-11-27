@@ -63,6 +63,7 @@ async function ServicesContent({ searchParams }: { searchParams: SearchParams })
           <option value="newest">Newest</option>
           <option value="price_asc">Price: Low to High</option>
           <option value="price_desc">Price: High to Low</option>
+          <option value="rating_desc">Top rated</option>
         </select>
         <div className="flex gap-2 md:col-span-3 md:justify-end">
           <button type="submit" className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">Apply</button>

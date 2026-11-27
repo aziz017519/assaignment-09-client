@@ -13,10 +13,7 @@ import { AdminTable, type AdminColumn } from "@/components/admin/admin-table"
 import { StatsCard } from "@/components/shared/stats-card"
 import { useAdminTransactions } from "@/hooks/use-admin-transactions"
 import { formatDate, formatMoney, formatNumber } from "@/lib/admin-format"
-import {
-  ADMIN_TRANSACTION_TYPES,
-  type AdminTransaction,
-} from "@/types/admin"
+import type { AdminTransaction } from "@/types/admin"
 
 const TRANSACTION_STATUSES = ["paid", "unpaid", "pending", "failed", "refunded"] as const
 
@@ -71,14 +68,12 @@ export default function AdminTransactionsPage() {
     {
       key: "service",
       header: "Service",
-      render: (row) => row.serviceTitle || (row.type === "subscription" ? "Subscription plan" : "—"),
+      render: (row) => row.serviceTitle || "—",
     },
     {
       key: "type",
       header: "Type",
-      render: (row) => (
-        <AdminStatusBadge label={label(row.type)} tone={row.type === "subscription" ? "blue" : "gray"} />
-      ),
+      render: (row) => <AdminStatusBadge label={label(row.type)} tone="gray" />,
     },
     {
       key: "amount",
@@ -119,7 +114,7 @@ export default function AdminTransactionsPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Transactions</h1>
         <p className="text-muted-foreground">
-          Real payment records from bookings and subscriptions. No fabricated payment methods.
+          Real payment records from completed bookings. No fabricated payment methods.
         </p>
       </div>
 
@@ -180,12 +175,6 @@ export default function AdminTransactionsPage() {
           options={TRANSACTION_STATUSES}
           onChange={(value) => setFilter("status", value)}
         />
-        <AdminSelect
-          label="Type"
-          value={filters.method}
-          options={ADMIN_TRANSACTION_TYPES}
-          onChange={(value) => setFilter("method", value)}
-        />
         <AdminDateRange
           from={filters.from}
           to={filters.to}
@@ -200,7 +189,7 @@ export default function AdminTransactionsPage() {
         rowKey={(row) => row.id}
         loading={loading}
         emptyTitle="No transactions found"
-        emptyDescription="Try a different search, status, type or date range."
+        emptyDescription="Try a different search, status or date range."
       />
 
       <AdminPagination meta={meta} onPage={(page) => setFilter("page", String(page))} />

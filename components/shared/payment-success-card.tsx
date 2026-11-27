@@ -15,7 +15,6 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { VerifiedProBadge } from "@/components/shared/verified-pro-badge"
 import { api, ApiError } from "@/lib/api"
 import { dispatchPaymentConfirmed } from "@/lib/payment-events"
 import { cn } from "@/lib/utils"
@@ -198,7 +197,7 @@ export function PaymentSuccessCard({
           setTimedOut(false)
           if (!confirmedRef.current) {
             confirmedRef.current = true
-            dispatchPaymentConfirmed(data.type)
+            dispatchPaymentConfirmed()
             router.refresh()
           }
           return
@@ -329,13 +328,8 @@ export function PaymentSuccessCard({
     )
   }
 
-  const isBooking = result.type === "booking"
-  const primaryAction = isBooking
-    ? { href: "/dashboard/customer/bookings", label: "View my bookings" }
-    : { href: "/dashboard/technician/my-services", label: "Add a service" }
-  const secondaryAction = isBooking
-    ? { href: "/dashboard/customer", label: "Back to dashboard" }
-    : { href: "/dashboard/technician/subscription", label: "Manage subscription" }
+  const primaryAction = { href: "/dashboard/customer/bookings", label: "View my bookings" }
+  const secondaryAction = { href: backHref, label: backLabel }
 
   return (
     <div className={styles.page}>
@@ -369,12 +363,12 @@ export function PaymentSuccessCard({
           <DetailRow label="Payment method" value={result.paymentMethod || "Card"} />
           <DetailRow label="Date and time" value={formatDateTime(result.paidAt)} />
           <DetailRow label="Status">
-            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/40 dark:text-green-300">
+            <span className="inline-flex items-center rounded-full bg-success/15 px-2.5 py-0.5 text-xs font-medium text-success">
               Paid
             </span>
           </DetailRow>
 
-          {isBooking && result.booking ? (
+          {result.booking ? (
             <>
               <DetailRow label="Ticket #" mono value={result.booking.ticketId} />
               <DetailRow label="Service" value={result.booking.serviceTitle} />
@@ -384,26 +378,6 @@ export function PaymentSuccessCard({
                 value={formatDateOnly(result.booking.preferredDate)}
               />
               <DetailRow label="Address" value={result.booking.address} />
-            </>
-          ) : null}
-
-          {!isBooking && result.subscription ? (
-            <>
-              <DetailRow label="Plan" value="Pro Technician" />
-              <DetailRow
-                label="Billing interval"
-                value={
-                  result.subscription.interval.charAt(0).toUpperCase() +
-                  result.subscription.interval.slice(1)
-                }
-              />
-              <DetailRow
-                label="Next renewal date"
-                value={formatDateOnly(result.subscription.renewalDate)}
-              />
-              <DetailRow label="Plan status">
-                <VerifiedProBadge />
-              </DetailRow>
             </>
           ) : null}
         </dl>

@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -9,9 +8,8 @@ import { z } from "zod"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { ImageUploadField } from "@/components/ui/image-upload-field"
-import { ApiError, api } from "@/lib/api"
+import { api } from "@/lib/api"
 import { dispatchTechnicianDataChanged } from "@/lib/technician-events"
-import { useSubscription } from "@/hooks/use-subscription"
 
 const serviceSchema = z.object({
   title: z.string().trim().min(3, "Enter at least 3 characters"),
@@ -32,19 +30,10 @@ type ServiceValues = z.infer<typeof serviceSchema>
 
 const fieldClass = "w-full rounded-md border bg-background px-3 py-2 text-sm"
 
-function errorCode(error: unknown) {
-  if (error instanceof ApiError && error.data && typeof error.data === "object" && "code" in error.data) {
-    return String((error.data as { code?: unknown }).code ?? "")
-  }
-  return ""
-}
-
 export default function AddServicePage() {
   const router = useRouter()
-  const { status } = useSubscription()
   const [saving, setSaving] = useState(false)
   const [imageUploading, setImageUploading] = useState(false)
-  const atLimit = status?.serviceLimit != null && status.serviceCount >= status.serviceLimit
 
   const {
     register,
@@ -74,11 +63,7 @@ export default function AddServicePage() {
       toast.success("Service submitted for approval")
       router.push("/dashboard/technician/my-services")
     } catch (error) {
-      if (errorCode(error) === "PLAN_LIMIT_REACHED") {
-        toast.error("Free plan limit reached — upgrade to Pro to add more services.")
-      } else {
-        toast.error(error instanceof Error ? error.message : "Could not create service")
-      }
+      toast.error(error instanceof Error ? error.message : "Could not create service")
     } finally {
       setSaving(false)
     }
@@ -90,13 +75,6 @@ export default function AddServicePage() {
         <h1 className="text-2xl font-bold tracking-tight">Add Service</h1>
         <p className="text-muted-foreground">New services are submitted for admin approval before appearing publicly.</p>
       </div>
-
-      {atLimit ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-800 dark:text-amber-200">
-          <span>You have reached the Free plan limit (3 services). Upgrade to Pro for unlimited listings.</span>
-          <Button variant="outline" size="sm" asChild><Link href="/dashboard/technician/subscription">View plans</Link></Button>
-        </div>
-      ) : null}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 rounded-xl border bg-card p-6">
         <div className="grid gap-4 sm:grid-cols-2">
@@ -138,7 +116,7 @@ export default function AddServicePage() {
                   onChange={field.onChange}
                   onBlur={field.onBlur}
                   error={errors.image?.message}
-                  disabled={saving || atLimit}
+                  disabled={saving}
                   onUploadingChange={setImageUploading}
                 />
               )}
@@ -162,7 +140,7 @@ export default function AddServicePage() {
             </select>
           </div>
         </div>
-        <Button type="submit" disabled={saving || atLimit || imageUploading}>
+        <Button type="submit" disabled={saving || imageUploading}>
           {saving ? "Submitting…" : "Submit service"}
         </Button>
       </form>

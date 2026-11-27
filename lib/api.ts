@@ -80,8 +80,8 @@ export async function apiFetch<T = unknown>(
     ...rest,
     headers: finalHeaders,
     credentials: isCrossOrigin ? "omit" : "same-origin",
-    // Payment/plan state changes in the background via webhooks. Cached GETs
-    // could otherwise keep a stale "pending" or "free" response on screen.
+    // Payment state changes in the background via webhooks. Cached GETs could
+    // otherwise keep a stale "pending" response on screen.
     cache: "no-store",
   })
 
@@ -129,6 +129,120 @@ export async function apiFetch<T = unknown>(
   }
 
   return data as T
+}
+
+export type ApiBlobResponse = {
+  blob: Blob
+  filename: string
+}
+
+function isCrossOriginUrl(url: string) {
+  return (
+    typeof window !== "undefined" &&
+    /^https?:\/\//i.test(url) &&
+    new URL(url).origin !== window.location.origin
+  )
+}
+
+// Content-Disposition prefers RFC 5987 filename* over the quoted filename.
+// Strip path segments so a server-supplied name can never escape downloads.
+export function filenameFromContentDisposition(
+  header: string | null,
+  fallback = "invoice.pdf"
+) {
+  if (!header) return fallback
+  const encoded = /filename\*\s*=\s*[^']*'[^']*'([^;]+)/i.exec(header)
+  const plain = /filename\s*=\s*(?:"([^"]+)"|'([^']+)'|([^;]+))/i.exec(header)
+  const raw = (encoded?.[1] ?? plain?.[1] ?? plain?.[2] ?? plain?.[3] ?? "").trim()
+  if (!raw) return fallback
+  let decoded = raw
+  try {
+    decoded = decodeURIComponent(raw)
+  } catch {
+    // Keep the original value when it is not percent-encoded.
+  }
+  const safe = decoded
+    .split(/[\\/]/)
+    .pop()
+    ?.replace(/[\u0000-\u001F\u007F]/g, "")
+    .trim()
+  return safe && safe !== "." && safe !== ".." ? safe : fallback
+}
+
+/**
+ * Binary counterpart to apiFetch. Invoices are PDFs, so the JSON/text parser
+ * in apiFetch cannot be used; the bearer token and cross-origin credentials
+ * rules stay identical.
+ */
+export async function apiFetchBlob(
+  path: string,
+  options: ApiOptions = {}
+): Promise<ApiBlobResponse> {
+  const { auth = true, headers, _retried = false, ...rest } = options
+  const url = path.startsWith("http")
+    ? path
+    : `${getApiBaseUrl()}${path.startsWith("/") ? path : `/${path}`}`
+
+  const finalHeaders = new Headers(headers)
+  let tokenUsed: string | null = null
+  if (auth && !finalHeaders.has("Authorization")) {
+    tokenUsed = await getApiToken()
+    if (tokenUsed) finalHeaders.set("Authorization", `Bearer ${tokenUsed}`)
+  }
+
+  const res = await fetch(url, {
+    ...rest,
+    headers: finalHeaders,
+    credentials: isCrossOriginUrl(url) ? "omit" : "same-origin",
+    cache: "no-store",
+  })
+
+  if (!res.ok) {
+    if (res.status === 401 && auth) {
+      clearApiToken()
+      if (!_retried) {
+        const fresh = await getApiToken(true)
+        if (fresh && fresh !== tokenUsed) {
+          const retryHeaders = new Headers(finalHeaders)
+          retryHeaders.set("Authorization", `Bearer ${fresh}`)
+          return apiFetchBlob(path, {
+            ...options,
+            headers: retryHeaders,
+            _retried: true,
+          })
+        }
+      }
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("api:unauthorized"))
+      }
+    } else if (res.status === 403 && typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("api:forbidden"))
+    }
+
+    const contentType = res.headers.get("content-type") || ""
+    const payload = contentType.includes("application/json")
+      ? await res.json().catch(() => null)
+      : await res.text().catch(() => null)
+    const data =
+      payload && typeof payload === "object"
+        ? (payload as Record<string, unknown>)
+        : null
+    const message =
+      (typeof data?.message === "string" && data.message) ||
+      (typeof data?.error === "string" && data.error) ||
+      (typeof payload === "string" && payload.trim() ? payload.trim() : "") ||
+      (res.status === 403
+        ? "You do not have permission to download this invoice."
+        : "Could not download the invoice.")
+    const code = typeof data?.code === "string" ? data.code : undefined
+    throw new ApiError(message, res.status, payload, code)
+  }
+
+  const blob = await res.blob()
+  return {
+    blob,
+    filename: filenameFromContentDisposition(res.headers.get("content-disposition")),
+  }
 }
 
 export const api = {

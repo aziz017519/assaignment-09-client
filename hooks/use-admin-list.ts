@@ -61,7 +61,6 @@ export function useAdminList<T>(endpoint: string) {
       to: read("to"),
       sort: read("sort") || "newest",
       page: read("page") || "1",
-      method: read("method"),
     }
   }, [paramsString])
 

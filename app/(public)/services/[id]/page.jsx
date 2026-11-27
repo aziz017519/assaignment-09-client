@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { StarRating } from "@/components/reviews/star-rating"
+import { ReviewsSection } from "@/components/reviews/reviews-section"
 import { ServiceImage } from "@/components/shared/service-image"
 import {
   formatServicePrice,
@@ -60,6 +62,11 @@ export default async function ServiceDetailsPage({ params }) {
             <span className="rounded-full border px-2.5 py-1 capitalize">{service.serviceMode}</span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight">{service.title}</h1>
+          <StarRating
+            rating={service.averageRating}
+            count={service.ratingCount}
+            className="mt-2"
+          />
           <p className="mt-3 text-muted-foreground">{service.description}</p>
           <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
             <div className="rounded-lg border p-3"><p className="text-muted-foreground">Starting price</p><p className="font-semibold">{priceLabel}</p></div>
@@ -93,6 +100,11 @@ export default async function ServiceDetailsPage({ params }) {
           </div>
         </div>
       </div>
+
+      <ReviewsSection
+        serviceId={String(service._id || service.id || id)}
+        ratingCount={service.ratingCount}
+      />
     </div>
   )
 }

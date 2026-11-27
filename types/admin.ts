@@ -76,7 +76,7 @@ export interface AdminTransaction {
   customerEmail: string | null
   bookingId: string | null
   serviceTitle: string | null
-  type: "booking" | "subscription"
+  type: "booking"
   amount: number
   currency: string
   status: string
@@ -94,7 +94,6 @@ export type AdminFilterKey =
   | "to"
   | "sort"
   | "page"
-  | "method"
 
 export interface AdminFilterState {
   search?: string
@@ -105,7 +104,6 @@ export interface AdminFilterState {
   to?: string
   sort?: string
   page?: string
-  method?: string
 }
 
 export const ADMIN_USER_ROLES = ["customer", "technician", "admin"] as const
@@ -127,4 +125,3 @@ export const ADMIN_SERVICE_CATEGORIES = [
   "Washing Machine",
   "Electrical",
 ] as const
-export const ADMIN_TRANSACTION_TYPES = ["booking", "subscription"] as const

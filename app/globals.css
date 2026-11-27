@@ -24,6 +24,10 @@
     --color-input: var(--input);
     --color-border: var(--border);
     --color-destructive: var(--destructive);
+    --color-success: var(--success);
+    --color-warning: var(--warning);
+    --color-info: var(--info);
+    --color-rating: var(--rating);
     --color-accent-foreground: var(--accent-foreground);
     --color-accent: var(--accent);
     --color-muted-foreground: var(--muted-foreground);
@@ -48,6 +52,7 @@
 }
 
 :root {
+    color-scheme: light;
     --background: oklch(0.985 0.004 220);
     --foreground: oklch(0.22 0.03 245);
     --card: oklch(1 0 0);
@@ -63,6 +68,10 @@
     --accent: oklch(0.82 0.16 75); /* amber/orange */
     --accent-foreground: oklch(0.25 0.04 60);
     --destructive: oklch(0.577 0.245 27.325);
+    --success: oklch(0.48 0.13 155);
+    --warning: oklch(0.46 0.12 75);
+    --info: oklch(0.48 0.13 250);
+    --rating: oklch(0.48 0.14 70);
     --border: oklch(0.9 0.01 220);
     --input: oklch(0.9 0.01 220);
     --ring: oklch(0.58 0.1 210);
@@ -83,6 +92,7 @@
 }
 
 .dark {
+    color-scheme: dark;
     --background: oklch(0.17 0.02 245);
     --foreground: oklch(0.97 0.005 220);
     --card: oklch(0.22 0.025 245);
@@ -98,6 +108,10 @@
     --accent: oklch(0.78 0.15 75);
     --accent-foreground: oklch(0.2 0.03 60);
     --destructive: oklch(0.704 0.191 22.216);
+    --success: oklch(0.78 0.14 155);
+    --warning: oklch(0.82 0.14 80);
+    --info: oklch(0.78 0.12 250);
+    --rating: oklch(0.84 0.15 78);
     --border: oklch(1 0 0 / 12%);
     --input: oklch(1 0 0 / 15%);
     --ring: oklch(0.7 0.1 205);
@@ -126,4 +140,30 @@
   html {
     @apply font-sans;
     }
+
+  /* Added after first paint by ThemeProvider so stored themes do not animate in. */
+  html.theme-ready,
+  html.theme-ready body {
+    transition-property: background-color, color;
+    transition-duration: 240ms;
+    transition-timing-function: ease;
+    }
+
+  html.theme-ready *,
+  html.theme-ready *::before,
+  html.theme-ready *::after {
+    transition-property: background-color, color, border-color, fill, stroke;
+    transition-duration: 240ms;
+    transition-timing-function: ease;
+    }
+
+  @media (prefers-reduced-motion: reduce) {
+    html.theme-ready,
+    html.theme-ready body,
+    html.theme-ready *,
+    html.theme-ready *::before,
+    html.theme-ready *::after {
+      transition-duration: 0ms !important;
+      }
+  }
 }

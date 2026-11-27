@@ -26,32 +26,32 @@ export const BOOKING_STATUS_META: Record<
   string,
   { label: string; className: string }
 > = {
-  requested: { label: "Requested", className: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" },
-  accepted: { label: "Accepted", className: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300" },
-  "in-progress": { label: "In Progress", className: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300" },
-  completed: { label: "Completed", className: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" },
-  rejected: { label: "Rejected", className: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" },
-  cancelled: { label: "Cancelled", className: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300" },
+  requested: { label: "Requested", className: "bg-info/15 text-info" },
+  accepted: { label: "Accepted", className: "bg-info/15 text-info" },
+  "in-progress": { label: "In Progress", className: "bg-warning/15 text-warning" },
+  completed: { label: "Completed", className: "bg-success/15 text-success" },
+  rejected: { label: "Rejected", className: "bg-destructive/10 text-destructive dark:bg-destructive/20" },
+  cancelled: { label: "Cancelled", className: "bg-muted text-muted-foreground" },
 }
 
 export const PAYMENT_STATUS_META: Record<
   string,
   { label: string; className: string }
 > = {
-  unpaid: { label: "Unpaid", className: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300" },
-  pending: { label: "Pending", className: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300" },
-  paid: { label: "Paid", className: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" },
-  failed: { label: "Failed", className: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" },
-  refunded: { label: "Refunded", className: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" },
+  unpaid: { label: "Unpaid", className: "bg-warning/15 text-warning" },
+  pending: { label: "Pending", className: "bg-warning/15 text-warning" },
+  paid: { label: "Paid", className: "bg-success/15 text-success" },
+  failed: { label: "Failed", className: "bg-destructive/10 text-destructive dark:bg-destructive/20" },
+  refunded: { label: "Refunded", className: "bg-destructive/10 text-destructive dark:bg-destructive/20" },
 }
 
 export const APPROVAL_STATUS_META: Record<
   string,
   { label: string; className: string }
 > = {
-  pending: { label: "Pending", className: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300" },
-  approved: { label: "Approved", className: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" },
-  rejected: { label: "Rejected", className: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" },
+  pending: { label: "Pending", className: "bg-warning/15 text-warning" },
+  approved: { label: "Approved", className: "bg-success/15 text-success" },
+  rejected: { label: "Rejected", className: "bg-destructive/10 text-destructive dark:bg-destructive/20" },
 }
 
 export function dashboardPathForRole(role?: string | null) {

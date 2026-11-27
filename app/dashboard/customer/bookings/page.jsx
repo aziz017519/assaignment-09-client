@@ -3,9 +3,15 @@
 import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
 import { toast } from "sonner"
-import { api } from "@/lib/api"
+import { api, ApiError } from "@/lib/api"
+import { downloadInvoicePdf } from "@/lib/invoice"
 import { onPaymentConfirmed } from "@/lib/payment-events"
+import {
+  reviewErrorMessage,
+  submitBookingReview,
+} from "@/lib/review-api"
 import { Button } from "@/components/ui/button"
+import { ReviewModal } from "@/components/reviews/review-modal"
 import { EmptyState } from "@/components/shared/empty-state"
 import { BookingCard, BookingCardSkeleton } from "@/components/shared/booking-card"
 
@@ -25,6 +31,8 @@ export default function CustomerBookingsPage() {
   const [error, setError] = useState(null)
   const [busyId, setBusyId] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const [reviewTarget, setReviewTarget] = useState(null)
+  const [reviewSubmitting, setReviewSubmitting] = useState(false)
 
   const loadBookings = useCallback(async () => {
     setLoading(true)
@@ -97,13 +105,74 @@ export default function CustomerBookingsPage() {
     }
   }
 
+  async function downloadInvoice(id) {
+    setBusyId(id)
+    try {
+      await downloadInvoicePdf(id)
+      toast.success("Invoice downloaded")
+    } catch (err) {
+      toast.error(errorMessage(err, "Could not download the invoice."))
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  async function submitReview({ rating, review }) {
+    const id = reviewTarget?._id || reviewTarget?.id
+    if (!id || !reviewTarget) return
+    setReviewSubmitting(true)
+    try {
+      const result = await submitBookingReview(id, rating, review)
+      setBookings((current) =>
+        current.map((booking) =>
+          (booking._id || booking.id) === id
+            ? {
+                ...booking,
+                rating: result.rating,
+                review: result.review ?? review ?? null,
+                reviewedAt: result.reviewedAt ?? new Date().toISOString(),
+                canReview: false,
+              }
+            : booking
+        )
+      )
+      toast.success("Review submitted. Thank you for your feedback!")
+      setReviewTarget(null)
+    } catch (err) {
+      const status = err instanceof ApiError ? err.status : null
+      if (status === 409) {
+        // A concurrent submission already saved the review; reflect that
+        // locally without asking the customer to submit it again.
+        setBookings((current) =>
+          current.map((booking) =>
+            (booking._id || booking.id) === id
+              ? {
+                  ...booking,
+                  canReview: false,
+                  reviewedAt: booking.reviewedAt ?? new Date().toISOString(),
+                }
+              : booking
+          )
+        )
+        setReviewTarget(null)
+      } else if (status === 403) {
+        setReviewTarget(null)
+      }
+      toast.error(
+        reviewErrorMessage(err, "Could not submit your review. Please try again.")
+      )
+    } finally {
+      setReviewSubmitting(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">My Bookings</h1>
         <p className="text-muted-foreground">
-          View and manage your repair requests. Cancel is available only when status is requested.
-          Pay Now appears only when completed and unpaid.
+          View and manage your repair requests. Paid bookings can be reviewed and downloaded as invoices.
+          Cancel is available only when requested; Pay Now appears when completed and unpaid.
         </p>
       </div>
 
@@ -153,12 +222,24 @@ export default function CustomerBookingsPage() {
                   busy={busyId === id}
                   onCancel={() => void cancelBooking(id)}
                   onPay={() => void payNow(id)}
+                  onReview={() => setReviewTarget(booking)}
+                  onDownloadInvoice={() => void downloadInvoice(id)}
                 />
               </li>
             )
           })}
         </ul>
       ) : null}
+
+      <ReviewModal
+        open={Boolean(reviewTarget)}
+        booking={reviewTarget}
+        submitting={reviewSubmitting}
+        onSubmit={(value) => void submitReview(value)}
+        onClose={() => {
+          if (!reviewSubmitting) setReviewTarget(null)
+        }}
+      />
     </div>
   )
 }

@@ -1,7 +1,11 @@
+import { Download } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
+import { StarRating } from "@/components/reviews/star-rating"
 import { ServiceImage } from "@/components/shared/service-image"
 import { StatusBadge } from "@/components/shared/status-badge"
 import { PaymentBadge } from "@/components/shared/payment-badge"
+import { toRatingNumber } from "@/lib/service-display"
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -46,12 +50,23 @@ function imageSource(booking) {
   return typeof source === "string" && source.trim() ? source : null
 }
 
-export function BookingCard({ booking, busy = false, onCancel, onPay }) {
+export function BookingCard({
+  booking,
+  busy = false,
+  onCancel,
+  onPay,
+  onReview,
+  onDownloadInvoice,
+}) {
   const id = booking._id || booking.id
   const status = booking.status || "requested"
   const paymentStatus = booking.paymentStatus || "unpaid"
   const canCancel = Boolean(id) && status === "requested"
   const canPay = Boolean(id) && status === "completed" && paymentStatus === "unpaid"
+  const canReview = Boolean(id) && paymentStatus === "paid" && booking.canReview === true
+  const canDownloadInvoice = Boolean(id) && paymentStatus === "paid"
+  const hasReview = toRatingNumber(booking.rating) > 0 || Boolean(booking.reviewedAt)
+  const hasActions = canCancel || canPay || canReview || canDownloadInvoice
   const title = booking.serviceTitle || booking.service?.title || "Repair request"
   const technicianName = booking.technicianName || booking.technician?.name || "Technician"
   const technicianEmail = booking.technicianEmail || booking.technician?.email || ""
@@ -111,6 +126,22 @@ export function BookingCard({ booking, busy = false, onCancel, onPay }) {
             <PaymentBadge status={paymentStatus} />
           </div>
 
+          {hasReview ? (
+            <div className="rounded-lg border bg-muted/40 p-2">
+              <p className="text-xs text-muted-foreground">Your review</p>
+              {toRatingNumber(booking.rating) > 0 ? (
+                <StarRating
+                  rating={booking.rating}
+                  showCount={false}
+                  size="sm"
+                  className="mt-1"
+                />
+              ) : (
+                <p className="mt-0.5 text-xs font-medium">Review submitted</p>
+              )}
+            </div>
+          ) : null}
+
           <div>
             <p className="text-xs text-muted-foreground">Starting price</p>
             <p className="mt-0.5 text-2xl font-bold tracking-tight">
@@ -140,7 +171,30 @@ export function BookingCard({ booking, busy = false, onCancel, onPay }) {
                 {busy ? "Opening payment..." : "Pay Now"}
               </Button>
             ) : null}
-            {!canCancel && !canPay ? (
+            {canReview ? (
+              <Button
+                variant="outline"
+                className="w-full"
+                aria-label={`Rate and review ${ticket}`}
+                disabled={busy}
+                onClick={onReview}
+              >
+                {busy ? "Opening review..." : "Rate & Review"}
+              </Button>
+            ) : null}
+            {canDownloadInvoice ? (
+              <Button
+                variant="outline"
+                className="w-full"
+                aria-label={`Download invoice for ${ticket}`}
+                disabled={busy}
+                onClick={onDownloadInvoice}
+              >
+                <Download aria-hidden="true" />
+                {busy ? "Preparing invoice..." : "Download invoice"}
+              </Button>
+            ) : null}
+            {!hasActions ? (
               <p className="text-center text-xs text-muted-foreground">No actions available</p>
             ) : null}
           </div>
@@ -167,6 +221,7 @@ export function BookingCardSkeleton() {
           <div className="h-3 w-24 animate-pulse rounded bg-muted/60" />
           <div className="h-5 w-32 animate-pulse rounded-full bg-muted/60" />
           <div className="h-7 w-20 animate-pulse rounded bg-muted/60" />
+          <div className="h-8 w-full animate-pulse rounded bg-muted/60" />
           <div className="h-8 w-full animate-pulse rounded bg-muted/60" />
         </div>
       </div>

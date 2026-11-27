@@ -25,7 +25,7 @@ FixMate is an on-demand **Smart Device & Home Appliance Repair Service Booking P
 - Authentication: BetterAuth (email/password, role-based access for customer/technician/admin)
 - Role-based dashboards:
   - **Customer:** overview, bookings, payments
-  - **Technician:** overview, add service, my services (free-plan usage), requests, payments, subscription (Pro plan)
+  - **Technician:** overview, add service, my services, requests, booking payments
   - **Admin:** overview, users/roles, service approvals, bookings, transactions/revenue
 - Profile management with ImgBB photo upload
 - Stripe Checkout payment flow (success/cancel/verification pages)
@@ -53,12 +53,13 @@ Create `.env.local` (or configure hosting env vars). See `.env.example`:
 NEXT_PUBLIC_API_URL=            # Express server base URL
 NEXT_PUBLIC_APP_URL=            # This client's URL
 NEXT_PUBLIC_IMGBB_API_KEY=      # ImgBB upload key
+BETTER_AUTH_URL=                # This client's URL
 BETTER_AUTH_SECRET=
-BETTER_AUTH_URL=
-MONGODB_URI=                    # only if BetterAuth runs in Next.js
+BETTER_AUTH_DB_URI=             # MongoDB URI used by the BetterAuth adapter
+JWT_SECRET=                     # Same value as the backend JWT secret
 ```
 
-The Stripe keys for the Pro Technician Plan live on the **server** (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRO_PRICE_ID`). The server also reads `NEXT_PUBLIC_APP_URL` from this client environment to build Checkout success/cancel URLs.
+Stripe keys and Checkout URLs are owned by the Express server; this client only configures the backend and frontend origins.
 
 > Never commit `.env.local`. Only `NEXT_PUBLIC_*` variables are available in client components.
 
@@ -90,8 +91,7 @@ The Stripe keys for the Pro Technician Plan live on the **server** (`STRIPE_SECR
 - `app/(auth)` - sign-in/sign-up pages
 - `app/dashboard` - role-based dashboard routes and profile
 - `app/payment` - legacy Stripe success/cancel pages
-- `app/dashboard/customer/payments/success` - shared booking payment success route
-- `app/dashboard/technician/subscription/success` - shared Pro subscription success route
+- `app/dashboard/customer/payments/success` - booking payment success route
 - `app/api/auth/[...all]` - BetterAuth route handler
 - `components/layout` - Navbar, Footer, dashboard shell/sidebar/topbar, Logo
 - `components/shared` - reusable UI (badges, stats, empty state, modal, cards)
@@ -118,7 +118,6 @@ The Stripe keys for the Pro Technician Plan live on the **server** (`STRIPE_SECR
 - `recharts`
 - `shadcn`
 - `sonner`
-- `stripe`
 - `tw-animate-css`
 - `zod`
 
@@ -134,23 +133,11 @@ The Stripe keys for the Pro Technician Plan live on the **server** (`STRIPE_SECR
 - `tailwindcss`
 - `typescript`
 
-## Pro Technician Plan
-
-Technician-only dashboard pages: `/dashboard/technician/subscription` (plan, Free vs Pro, upgrade/manage; `/dashboard/subscription` remains as a compatibility route) and `/dashboard/technician/payments` (booking payments plus receipts labelled “Pro subscription”).
-
-- Free technicians can publish up to 3 services; My Services shows usage and disables **Add service** at the limit. The API still returns `403 PLAN_LIMIT_REACHED` for direct requests.
-- Pro technicians get unlimited services and a teal **Verified Pro** badge in their dashboard header and subscription page.
-- Cancelling/expiring Pro changes the plan back to Free without deleting existing services; new additions are blocked while at/above 3.
-- Stripe webhooks (not the success redirect) grant and revoke the plan. See the server README for webhook events and local `stripe listen` setup. Test card: `4242 4242 4242 4242`.
-
 ## Payment Success Page
 
-Both Checkout flows land on one shared success component:
+Booking Checkout redirects to `/dashboard/customer/payments/success?session_id={CHECKOUT_SESSION_ID}`.
 
-- Booking: `/dashboard/customer/payments/success?session_id={CHECKOUT_SESSION_ID}`
-- Pro: `/dashboard/technician/subscription/success?session_id={CHECKOUT_SESSION_ID}`
-
-The page is API-driven, so refreshing works. It polls `GET /api/payments/verify` every 2 seconds for up to ~30 seconds while webhooks catch up, then shows the transaction details, copyable transaction ID, and receipt/print actions. Missing, invalid, failed, or other users' sessions show a safe error card. Both payment-history pages show the transaction ID and a "View receipt" link when Stripe provides one.
+The page is API-driven, so refreshing works. It polls `GET /api/payments/verify` every 2 seconds for up to ~30 seconds while webhooks catch up, then shows the transaction details, copyable transaction ID, and receipt/print actions. Missing, invalid, failed, or other users' sessions show a safe error card. The customer payment-history page shows the transaction ID and a "View receipt" link when Stripe provides one.
 
 ## Notes
 

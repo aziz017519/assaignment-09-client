@@ -1,15 +1,13 @@
-import type { PaymentVerificationType } from "@/types"
-
 export const PAYMENT_CONFIRMED_EVENT = "fixmate:payment-confirmed"
 
 export type PaymentConfirmedDetail = {
-  type: PaymentVerificationType
+  type: "booking"
 }
 
-export function dispatchPaymentConfirmed(type: PaymentVerificationType) {
+export function dispatchPaymentConfirmed() {
   if (typeof window === "undefined") return
   window.dispatchEvent(
-    new CustomEvent<PaymentConfirmedDetail>(PAYMENT_CONFIRMED_EVENT, { detail: { type } })
+    new CustomEvent<PaymentConfirmedDetail>(PAYMENT_CONFIRMED_EVENT, { detail: { type: "booking" } })
   )
 }
 

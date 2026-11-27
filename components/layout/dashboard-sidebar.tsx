@@ -11,7 +11,6 @@ import {
   ListChecks,
   Users,
   BadgeCheck,
-  Crown,
   ReceiptText,
   UserCircle,
   X,
@@ -33,7 +32,6 @@ const menus: Record<string, { href: string; label: string; icon: LucideIcon }[]>
     { href: "/dashboard/technician/my-services", label: "My Services", icon: Wrench },
     { href: "/dashboard/technician/requests", label: "Requests", icon: ListChecks },
     { href: "/dashboard/technician/payments", label: "Payments", icon: CreditCard },
-    { href: "/dashboard/technician/subscription", label: "Subscription", icon: Crown },
     { href: "/dashboard/technician/profile", label: "Profile", icon: UserCircle },
   ],
   admin: [

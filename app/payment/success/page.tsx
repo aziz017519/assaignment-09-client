@@ -25,7 +25,7 @@ async function SuccessContent({ searchParams }: { searchParams: Promise<Record<s
 
   return (
     <div className="mx-auto max-w-xl px-4 py-16 text-center">
-      <h1 className="text-3xl font-bold text-green-600">Payment Successful</h1>
+      <h1 className="text-3xl font-bold text-success">Payment Successful</h1>
       <p className="mt-3 text-muted-foreground">Your payment has been processed. Thank you for using FixMate.</p>
       <div className="mt-6 rounded-xl border bg-card p-5 text-left text-sm">
         <p><span className="font-medium">Session ID:</span> {sessionId || "N/A"}</p>

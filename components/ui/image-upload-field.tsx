@@ -238,7 +238,7 @@ export function ImageUploadField({
 
             {status === "success" ? (
               <span
-                className="inline-flex items-center gap-1 text-xs font-medium text-accent"
+                className="inline-flex items-center gap-1 text-xs font-medium text-success"
                 aria-live="polite"
               >
                 <CheckCircle2 className="size-3.5" aria-hidden="true" />

@@ -349,7 +349,7 @@ export function ProfileForm() {
 
           <div className="flex flex-col gap-5 py-6 sm:flex-row sm:items-center">
             <div className="relative shrink-0">
-              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-amber-950/70 text-3xl font-bold text-accent ring-4 ring-accent/40 ring-offset-4 ring-offset-card">
+              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-3xl font-bold text-primary ring-4 ring-primary/30 ring-offset-4 ring-offset-card">
                 {avatarSource ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -381,7 +381,7 @@ export function ProfileForm() {
                     {profile?.email}
                   </p>
                 </div>
-                <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-accent/30 bg-accent/15 px-2.5 py-1 text-[10px] font-bold tracking-wider text-accent">
+                <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-success/30 bg-success/15 px-2.5 py-1 text-[10px] font-bold tracking-wider text-success">
                   <Shield className="h-3 w-3" aria-hidden="true" />
                   {config.badge}
                 </span>

@@ -2,20 +2,17 @@
 
 import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
-import { ArrowUpRight, RefreshCw, Wrench } from "lucide-react"
+import { RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/shared/empty-state"
 import { StatusBadge } from "@/components/shared/status-badge"
-import { VerifiedProBadge } from "@/components/shared/verified-pro-badge"
 import { api } from "@/lib/api"
-import { useSubscription } from "@/hooks/use-subscription"
 import type { Service } from "@/types"
 
 export default function MyServicesPage() {
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const { status, loading: planLoading } = useSubscription()
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -34,54 +31,15 @@ export default function MyServicesPage() {
     void Promise.resolve().then(load)
   }, [load])
 
-  const isPro = status?.plan === "pro"
-  const atLimit = status?.serviceLimit != null && status.serviceCount >= status.serviceLimit
-
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight">My Services</h1>
-            {isPro ? <VerifiedProBadge /> : null}
-          </div>
+          <h1 className="text-2xl font-bold tracking-tight">My Services</h1>
           <p className="mt-1 text-muted-foreground">Manage your services: edit, delete and toggle availability.</p>
         </div>
-        {atLimit ? (
-          <Button disabled title="Free plan limit reached">Add service</Button>
-        ) : (
-          <Button asChild><Link href="/dashboard/technician/add-service">Add service</Link></Button>
-        )}
+        <Button asChild><Link href="/dashboard/technician/add-service">Add service</Link></Button>
       </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4 text-sm">
-        <div className="flex items-center gap-2">
-          <Wrench className="size-4 text-muted-foreground" aria-hidden="true" />
-          {planLoading && !status ? (
-            <span className="text-muted-foreground">Loading plan usage…</span>
-          ) : status?.serviceLimit == null ? (
-            <span>Unlimited services with Pro</span>
-          ) : (
-            <span>
-              <strong>{status.serviceCount} / {status.serviceLimit}</strong> services used
-            </span>
-          )}
-        </div>
-        {status?.plan === "free" ? (
-          <Link href="/dashboard/technician/subscription" className="font-medium text-teal-600 hover:underline dark:text-teal-300">
-            Upgrade to Pro for unlimited services <ArrowUpRight className="inline size-3.5" />
-          </Link>
-        ) : null}
-      </div>
-
-      {atLimit ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-800 dark:text-amber-200">
-          <span>You have reached the Free plan limit. Existing services stay active, but new ones need Pro.</span>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/dashboard/technician/subscription">View plans</Link>
-          </Button>
-        </div>
-      ) : null}
 
       {loading ? (
         <div className="space-y-3" aria-busy="true">

@@ -14,8 +14,6 @@ export type ApprovalStatus = "pending" | "approved" | "rejected"
 
 export type ServiceMode = "home" | "shop" | "online"
 
-export type Plan = "free" | "pro"
-
 export interface User {
   id: string
   name: string
@@ -28,11 +26,6 @@ export interface User {
   address?: string | null
   area?: string | null
   bio?: string | null
-  // Technician-only subscription fields; customers and admins ignore them.
-  plan?: Plan
-  stripeCustomerId?: string | null
-  stripeSubscriptionId?: string | null
-  planExpiresAt?: string | null
   createdAt?: string
 }
 
@@ -76,6 +69,9 @@ export interface Service {
   provider?: ServiceTechnician
   technician?: ServiceTechnician
   createdAt?: string
+  /** Rating summary returned by the public services endpoints. */
+  averageRating?: number | string | null
+  ratingCount?: number | string | null
 }
 
 export interface Booking {
@@ -87,6 +83,7 @@ export interface Booking {
   imageUrl?: string | null
   serviceImage?: string | null
   customer?: User | { _id: string; name: string; email?: string }
+  customerName?: string
   technician?: { name?: string; email?: string; image?: string | null } | User
   technicianName?: string
   technicianEmail?: string
@@ -100,20 +97,37 @@ export interface Booking {
   basePrice?: number | string | null
   finalAmount?: number | string | null
   createdAt?: string
+  rating?: number | string | null
+  review?: string | null
+  reviewedAt?: string | null
+  canReview?: boolean
+}
+
+export interface ServiceReview {
+  rating: number
+  review?: string | null
+  reviewedAt?: string | null
+  customerName?: string
+}
+
+export interface ReviewResult {
+  rating: number
+  review?: string | null
+  reviewedAt?: string | null
+  service?: {
+    averageRating?: number | string | null
+    ratingCount?: number | string | null
+  }
 }
 
 export interface Payment {
   // The API returns `id`; older/admin rows may still expose `_id`.
   id?: string
   _id?: string
-  // Booking rows keep a bookingId; subscription rows keep userId/stripeInvoiceId.
+  // Booking rows keep a bookingId.
   bookingId?: string | null
-  userId?: string | null
-  type?: "booking" | "subscription"
   amount: number
   currency?: string
-  stripeInvoiceId?: string | null
-  stripeSessionId?: string | null
   transactionId?: string | null
   receiptUrl?: string | null
   paymentStatus?: "paid" | "unpaid" | "failed"
@@ -128,11 +142,10 @@ export interface Payment {
 }
 
 export type PaymentVerificationStatus = "paid" | "pending" | "failed"
-export type PaymentVerificationType = "booking" | "subscription"
 
 export interface PaymentVerificationResult {
   status: PaymentVerificationStatus
-  type: PaymentVerificationType
+  type: "booking"
   transactionId: string | null
   sessionId: string
   amount: number
@@ -148,30 +161,4 @@ export interface PaymentVerificationResult {
     preferredDate: string | null
     address: string
   }
-  subscription?: {
-    plan: "pro"
-    renewalDate: string | null
-    interval: string
-  }
-}
-
-export interface SubscriptionStatus {
-  plan: Plan
-  planExpiresAt: string | null
-  serviceCount: number
-  serviceLimit: number | null
-  hasSubscription: boolean
-  price: { amount: number; currency: string; interval: string } | null
-}
-
-export interface TechnicianPayment {
-  id: string
-  type: "booking" | "subscription"
-  label: string
-  amount: number
-  currency: string
-  status: string
-  createdAt: string | null
-  transactionId: string | null
-  receiptUrl?: string | null
 }

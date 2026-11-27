@@ -172,7 +172,7 @@ export default async function HomePage() {
                 </div>
               ))}
               <div className="col-span-2 rounded-xl border bg-card p-5">
-                <div className="flex items-center gap-1 text-amber-500">
+                <div className="flex items-center gap-1 text-rating">
                   {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
                 </div>
                 <p className="mt-2 text-sm text-muted-foreground">“FixMate made it easy to find a reliable technician for my AC. Clear updates and smooth payment.”</p>

@@ -14,9 +14,9 @@ import { EmptyState } from "@/components/shared/empty-state"
 import type { TechnicianMonthPoint, TechnicianStatusCount } from "@/types/technician"
 
 const SERIES = [
-  { key: "requested", name: "Requested", color: "#f59e0b" },
-  { key: "completed", name: "Completed", color: "#22c55e" },
-  { key: "cancelled", name: "Cancelled", color: "#ef4444" },
+  { key: "requested", name: "Requested", color: "var(--warning)" },
+  { key: "completed", name: "Completed", color: "var(--success)" },
+  { key: "cancelled", name: "Cancelled", color: "var(--destructive)" },
 ] as const
 
 export function TechnicianRequestsChart({
@@ -62,7 +62,7 @@ export function TechnicianRequestsChart({
             axisLine={false}
           />
           <Tooltip
-            cursor={{ fill: "#14b8a6", fillOpacity: 0.08 }}
+            cursor={{ fill: "var(--primary)", fillOpacity: 0.08 }}
             contentStyle={{
               background: "var(--card)",
               border: "1px solid var(--border)",

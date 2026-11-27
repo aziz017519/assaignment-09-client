@@ -169,10 +169,10 @@ export function AdminPagination({
 type Tone = "green" | "amber" | "red" | "blue" | "gray"
 
 const toneClasses: Record<Tone, string> = {
-  green: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
-  amber: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300",
-  red: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
-  blue: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+  green: "bg-success/15 text-success",
+  amber: "bg-warning/15 text-warning",
+  red: "bg-destructive/10 text-destructive dark:bg-destructive/20",
+  blue: "bg-info/15 text-info",
   gray: "bg-muted text-muted-foreground",
 }
 

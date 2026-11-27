@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { StarRating } from "@/components/reviews/star-rating"
 import { Button } from "@/components/ui/button"
 import { ServiceImage } from "@/components/shared/service-image"
 import { formatServicePrice, getTechnician } from "@/lib/service-display"
@@ -31,6 +32,12 @@ export function ServiceCard({ service }) {
         <p className="mt-1 truncate text-sm text-muted-foreground">
           by {technicianName}
         </p>
+        <StarRating
+          rating={service.averageRating}
+          count={service.ratingCount}
+          size="sm"
+          className="mt-2"
+        />
         <div className="mt-3 flex items-center justify-between">
           <p className="font-semibold text-primary">{priceLabel}</p>
         </div>

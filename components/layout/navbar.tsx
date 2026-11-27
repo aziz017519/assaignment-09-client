@@ -6,6 +6,7 @@ import { Menu, X } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 import { Logo } from "@/components/layout/logo"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { dashboardPathForRole, profilePathForRole } from "@/lib/constants"
 import { authClient } from "@/lib/auth-client"
@@ -61,6 +62,7 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
+          <ThemeToggle />
           {isPending ? (
             <div className="h-8 w-24 animate-pulse rounded-md bg-muted" />
           ) : user ? (
@@ -150,6 +152,10 @@ export function Navbar() {
                 </Link>
               )
             })}
+            <div className="mt-2 flex items-center justify-between border-t px-3 pt-2">
+              <span className="text-sm font-medium">Appearance</span>
+              <ThemeToggle />
+            </div>
             <div className="mt-2 border-t pt-2">
               {user ? (
                 <div className="space-y-1">

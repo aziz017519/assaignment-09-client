@@ -4,7 +4,6 @@ import Link from "next/link"
 import { Wrench, BadgeCheck, ListChecks, RefreshCw } from "lucide-react"
 import { TechnicianRequestsChart } from "@/components/dashboard/technician-requests-chart"
 import { StatsCard } from "@/components/shared/stats-card"
-import { VerifiedProBadge } from "@/components/shared/verified-pro-badge"
 import { Button } from "@/components/ui/button"
 import { useTechnicianStats } from "@/hooks/use-technician-stats"
 
@@ -23,22 +22,11 @@ function StatSkeleton() {
 export default function TechnicianOverviewPage() {
   const { stats, loading, error, errorStatus, retry } = useTechnicianStats()
 
-  const serviceLimit = stats?.serviceLimit ?? null
-  const isPro = serviceLimit === null && !!stats
-  const atLimit = serviceLimit !== null && !!stats && stats.totalServices >= serviceLimit
-  const progress =
-    serviceLimit !== null && serviceLimit > 0 && stats
-      ? Math.min(100, (stats.totalServices / serviceLimit) * 100)
-      : 0
-
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Technician Overview</h1>
-          <p className="text-muted-foreground">Manage your services and incoming repair requests.</p>
-        </div>
-        {isPro ? <VerifiedProBadge /> : null}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Technician Overview</h1>
+        <p className="text-muted-foreground">Manage your services and incoming repair requests.</p>
       </div>
 
       {error ? (
@@ -68,42 +56,8 @@ export default function TechnicianOverviewPage() {
           <>
             <StatsCard
               title="Total Services"
-              value={
-                serviceLimit === null
-                  ? formatNumber(stats.totalServices)
-                  : `${formatNumber(stats.totalServices)} / ${formatNumber(serviceLimit)}`
-              }
+              value={formatNumber(stats.totalServices)}
               icon={Wrench}
-              footer={
-                serviceLimit === null ? undefined : (
-                  <div>
-                    <div
-                      className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
-                      role="progressbar"
-                      aria-label="Services used"
-                      aria-valuemin={0}
-                      aria-valuemax={serviceLimit}
-                      aria-valuenow={stats.totalServices}
-                    >
-                      <div
-                        className="h-full rounded-full bg-teal-500 transition-all dark:bg-teal-400"
-                        style={{ width: `${progress}%` }}
-                      />
-                    </div>
-                    <div className="mt-2 flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                      <span>of {formatNumber(serviceLimit)} on Free plan</span>
-                      {atLimit ? (
-                        <Link
-                          href="/dashboard/technician/subscription"
-                          className="font-medium text-teal-600 hover:underline dark:text-teal-300"
-                        >
-                          Upgrade
-                        </Link>
-                      ) : null}
-                    </div>
-                  </div>
-                )
-              }
             />
             <StatsCard
               title="Approved Services"

@@ -57,10 +57,6 @@ export async function middleware(request: NextRequest) {
       if (pathname.startsWith("/dashboard/admin") && role !== "admin") {
         return NextResponse.redirect(new URL(dashboardPathForRole(role), request.url))
       }
-      // The Pro subscription page is technician-only.
-      if (pathname.startsWith("/dashboard/subscription") && role !== "technician") {
-        return NextResponse.redirect(new URL(dashboardPathForRole(role), request.url))
-      }
       // Role-specific profile routes are covered by the checks above; the legacy
       // /dashboard/profile remains valid for any logged-in user.
     }
